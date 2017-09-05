@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>WebGL-18(进步和偏移)</title>
+</head>
+<body>
+	<canvas id="myCanvas" width="600" height="450"></canvas>
+	<script>
+		var canvas = document.getElementById('myCanvas');
+		var gl = canvas.getContext('webgl');
+
+		var vertCode = ''
+			+ 'attribute vec4 a_Position;\n'
+			+ 'attribute float a_PointSize;\n'
+			+ 'void main() {\n'
+			+ ' gl_Position = a_Position;\n'
+			+ ' gl_PointSize = a_PointSize;\n'
+			+ '}\n';
+
+		var vertShader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vertShader, vertCode);
+		gl.compileShader(vertShader);
+
+		var fragCode = ''
+			+ 'void main() {\n'
+			+ ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n'
+			+ '}\n';
+		var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fragShader, fragCode);
+		gl.compileShader(fragShader);
+
+		var shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertShader);
+		gl.attachShader(shaderProgram, fragShader);
+		gl.linkProgram(shaderProgram);
+		gl.useProgram(shaderProgram);
+
+		var verticeSizes = new Float32Array([
+				0.0, 0.5, 10.0,
+				-0.5, -0.5, 20.0,
+				0.5, -0.5, 30.0
+			]);
+
+		var FSIZE = verticeSizes.BYTES_PER_ELEMENT;
+		//console.log(Float32Array.BYTES_PER_ELEMENT);
+
+		var vertexBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, verticeSizes, gl.STATIC_DRAW);
+		//gl.deleteBuffer(vertexBuffer);
+
+		var a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
+		gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE*3, 0);
+		gl.enableVertexAttribArray(a_Position);
+
+		var a_PointSize = gl.getAttribLocation(shaderProgram, 'a_PointSize');
+		gl.vertexAttribPointer(a_PointSize, 1, gl.FLOAT, false, FSIZE*3, FSIZE*2);
+		gl.enableVertexAttribArray(a_PointSize);
+
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+
+		gl.drawArrays(gl.POINTS, 0, verticeSizes.length/3);
+
+	</script>
+</body>
+</html>

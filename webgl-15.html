@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>WebGL-15(矩阵函数)</title>
+</head>
+<body>
+	<canvas id="myCanvas" width="600" height="450"></canvas>
+	<script src="libs-custom/webgl/cuon-matrix.js"></script>
+	<script>
+		var canvas = document.getElementById('myCanvas');
+		var gl = canvas.getContext('webgl');
+
+		var vertCode = ''
+			+ 'attribute vec4 a_Position;\n'
+			+ 'uniform mat4 u_Matrix;\n'
+			+ 'void main() {\n'
+			+ ' gl_Position = u_Matrix * a_Position;\n'
+			+ '}\n';
+
+		var vertShader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vertShader, vertCode);
+		gl.compileShader(vertShader);
+
+		var fragCode = ''
+			+ 'void main() {\n'
+			+ ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n'
+			+ '}\n';
+		var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fragShader, fragCode);
+		gl.compileShader(fragShader);
+
+		var shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertShader);
+		gl.attachShader(shaderProgram, fragShader);
+		gl.linkProgram(shaderProgram);
+		gl.useProgram(shaderProgram);
+
+		var n = 3;
+		var vertices = new Float32Array([
+				0.0, 0.3,
+				-0.3, -0.3,
+				0.3, -0.3
+			]);
+		//console.log(Float32Array.BYTES_PER_ELEMENT);
+
+		var vertexBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+		//gl.deleteBuffer(vertexBuffer);
+
+		var a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
+		gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(a_Position);
+		//gl.disableVertexAttribArray(a_Position);
+
+		var ANGLE = 90.0; // 旋转角度
+		var Tx = 0.5; // 平移距离
+		/*var radian = Math.PI * ANGLE / 180.0;
+		var cosB = Math.cos(radian), sinB = Math.sin(radian);
+		var matrix = new Float32Array([
+				cosB, sinB, 0.0, 0.0,
+				-sinB, cosB, 0.0, 0.0,
+				0.0, 0.0, 1.0, 0.0,
+				0.0, 0.0, 0.0, 1.0
+			]);*/
+		var matrix = new Matrix4();
+		// 旋转
+		/*matrix.setRotate(ANGLE, 1.0, 0.0, 1.0);*/
+		// 平移
+		/*matrix.setTranslate(0.5, 0.5, 0);*/
+		matrix.setRotate(ANGLE, 0, 0, 1);
+		matrix.translate(Tx, 0, 0);
+		console.log(matrix);
+
+		var u_Matrix = gl.getUniformLocation(shaderProgram, 'u_Matrix');
+		gl.uniformMatrix4fv(u_Matrix, false, matrix.elements);
+
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+
+		/*gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);*/
+		gl.drawArrays(gl.TRIANGLES, 0, n);
+
+	</script>
+</body>
+</html>

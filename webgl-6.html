@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>WebGL-6</title>
+</head>
+<body>
+	<canvas id="myCanvas" width="600" height="450"></canvas>
+	<script>
+		var canvas = document.getElementById('myCanvas');
+		var gl = canvas.getContext('webgl');
+
+		var vertCode = ''
+			+ 'attribute vec4 a_Position;\n'
+			+ 'void main() {\n'
+			+ ' gl_Position = a_Position;\n'
+			+ ' gl_PointSize = 10.0;\n'
+			+ '}\n';
+
+		var vertShader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vertShader, vertCode);
+		gl.compileShader(vertShader);
+
+		var fragCode = ''
+			+ 'precision mediump float;\n'
+			+ 'uniform vec4 u_FragColor;\n'
+			+ 'void main() {\n'
+			+ ' gl_FragColor = u_FragColor;\n'
+			+ '}\n';
+		var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fragShader, fragCode);
+		gl.compileShader(fragShader);
+
+		var shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertShader);
+		gl.attachShader(shaderProgram, fragShader);
+		gl.linkProgram(shaderProgram);
+		gl.useProgram(shaderProgram);
+
+		// 着色器变量赋值
+		var a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
+		/*gl.vertexAttrib3f(a_Position, 0.0, 0.0, 0.0);*/
+		var u_FragColor = gl.getUniformLocation(shaderProgram, 'u_FragColor');
+		// gl.vertexAttrib3f(u_FragColor, 1.0, 1.0, 1.0);
+
+		canvas.onmousedown = function (event) {
+			draw(event, gl, canvas, a_Position, u_FragColor);
+		};
+
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+
+		/*gl.drawArrays(gl.POINTS, 0, 1);*/
+
+		// 绘点
+		var points = [];
+		var colors = [];
+		function draw(event, gl, canvas, a_Position, u_FragColor) {
+			var x = event.clientX;
+			var y = event.clientY;
+			var rect = event.target.getBoundingClientRect();
+
+			x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+			y = -((y - rect.top) - canvas.height/2)/(canvas.height/2);
+			//console.log(x + ':' + y);
+
+			points.push([x, y]);
+
+			if(x >= 0 && y >= 0) {
+				colors.push([1.0, 0.0, 0.0, 1.0]);
+			} else if(x < 0 && y < 0) {
+				colors.push([0.0, 1.0, 0.0, 1.0]);
+			} else {
+				colors.push([1.0, 1.0, 1.0, 1.0]);
+			}
+
+			gl.clear(gl.COLOR_BUFFER_BIT);
+
+			var xy, rgba;
+			for(var i = 0, len = points.length; i < len; i++){
+				xy = points[i];
+				// rgba = colors[i];
+				rgba = new Float32Array(colors[i]);
+
+				gl.vertexAttrib3f(a_Position, xy[0], xy[1], 0.0);
+				// gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
+				gl.uniform4fv(u_FragColor, rgba);
+				gl.drawArrays(gl.POINTS, 0, 1);
+			}
+
+		}
+
+	</script>
+</body>
+</html>

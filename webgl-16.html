@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>WebGL-16(动画)</title>
+</head>
+<body>
+	<canvas id="myCanvas" width="600" height="450"></canvas>
+	<br>
+	<button onclick="up()">Up</button>
+	<button onclick="down()">Down</button>
+	<script scr="libs-custom/webgl/webgl-utils.js"></script>
+	<script src="libs-custom/webgl/cuon-matrix.js"></script>
+	<script>
+		var canvas = document.getElementById('myCanvas');
+		var gl = canvas.getContext('webgl');
+
+		var vertCode = ''
+			+ 'attribute vec4 a_Position;\n'
+			+ 'uniform mat4 u_Matrix;\n'
+			+ 'void main() {\n'
+			+ ' gl_Position = u_Matrix * a_Position;\n'
+			+ '}\n';
+
+		var vertShader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vertShader, vertCode);
+		gl.compileShader(vertShader);
+
+		var fragCode = ''
+			+ 'void main() {\n'
+			+ ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n'
+			+ '}\n';
+		var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fragShader, fragCode);
+		gl.compileShader(fragShader);
+
+		var shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertShader);
+		gl.attachShader(shaderProgram, fragShader);
+		gl.linkProgram(shaderProgram);
+		gl.useProgram(shaderProgram);
+
+		var n = 3;
+		var vertices = new Float32Array([
+				0.0, 0.5,
+				-0.5, -0.5,
+				0.5, -0.5
+			]);
+		//console.log(Float32Array.BYTES_PER_ELEMENT);
+
+		var vertexBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+		//gl.deleteBuffer(vertexBuffer);
+
+		var a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
+		gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(a_Position);
+		//gl.disableVertexAttribArray(a_Position);
+
+		var ANGLE_STEP = 45.0;
+		var u_Matrix = gl.getUniformLocation(shaderProgram, 'u_Matrix');
+
+		var currentAngle = 0.0;
+		var matrix = new Matrix4();
+		var tick = function() {
+			currentAngle = animate(currentAngle);
+			draw(gl, n , currentAngle, matrix, u_Matrix);
+			requestAnimationFrame(tick);
+		};
+		tick();
+
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+
+		// 变换角度
+		var last = new Date().getTime();
+		function animate(angle) {
+			var now = new Date().getTime();
+			var between = 0;
+			if(last) {
+				between = now - last;
+			}
+			last = now;
+			return (angle + ANGLE_STEP * (between / 1000.0)) % 360;
+		}
+
+		// 绘制图形
+		function draw(gl, n , currentAngle, matrix, u_Matrix) {
+			matrix.setRotate(currentAngle, 0.0, 0.0, 1.0);
+			matrix.translate(0.35, 0, 0);
+			gl.uniformMatrix4fv(u_Matrix, false, matrix.elements);
+
+			gl.clear(gl.COLOR_BUFFER_BIT);
+
+			gl.drawArrays(gl.TRIANGLES, 0, n);
+		}
+
+		// 调整速度
+		function up() {
+			if(180.0 > ANGLE_STEP) {
+				ANGLE_STEP += 5.0;
+			}
+		}
+		function down() {
+			if(5.0 <= ANGLE_STEP) {
+				ANGLE_STEP -= 5.0;
+			}
+		}
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>WebGL-10(平移)</title>
+</head>
+<body>
+	<canvas id="myCanvas" width="600" height="450"></canvas>
+	<script>
+		var canvas = document.getElementById('myCanvas');
+		var gl = canvas.getContext('webgl');
+
+		var vertCode = ''
+			+ 'attribute vec4 a_Position;\n'
+			+ 'uniform vec4 u_Translation;\n'
+			+ 'void main() {\n'
+			+ ' gl_Position = a_Position + u_Translation;\n'
+			/*+ ' gl_PointSize = 10.0;\n'*/
+			+ '}\n';
+
+		var vertShader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vertShader, vertCode);
+		gl.compileShader(vertShader);
+
+		var fragCode = ''
+			+ 'void main() {\n'
+			+ ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n'
+			+ '}\n';
+		var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fragShader, fragCode);
+		gl.compileShader(fragShader);
+
+		var shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertShader);
+		gl.attachShader(shaderProgram, fragShader);
+		gl.linkProgram(shaderProgram);
+		gl.useProgram(shaderProgram);
+
+		var n = 3;
+		var vertices = new Float32Array([
+				0.0, 0.5,
+				-0.5, -0.5,
+				0.5, -0.5
+			]);
+		//console.log(Float32Array.BYTES_PER_ELEMENT);
+
+		var vertexBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+		//gl.deleteBuffer(vertexBuffer);
+
+		var a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
+		gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(a_Position);
+		//gl.disableVertexAttribArray(a_Position);
+
+		var Tx = 0.5, Ty = 0.5, Tz = 0.0;
+		var u_Translation = gl.getUniformLocation(shaderProgram, 'u_Translation');
+		gl.uniform4f(u_Translation, Tx, Ty, Tz, 0.0);
+
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+
+		/*gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);*/
+		gl.drawArrays(gl.TRIANGLES, 0, n);
+
+	</script>
+</body>
+</html>

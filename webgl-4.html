@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>WebGL-4</title>
+</head>
+<body>
+	<canvas id="myCanvas" width="600" height="450"></canvas>
+	<script>
+		var canvas = document.getElementById('myCanvas');
+		var gl = canvas.getContext('webgl');
+
+		var vertCode = ''
+			+ 'attribute vec4 a_Position;\n'
+			+ 'attribute float a_PointSize;\n'
+			+ 'void main() {\n'
+			+ ' gl_Position = a_Position;\n'
+			+ ' gl_PointSize = a_PointSize;\n'
+			+ '}\n';
+
+		var vertShader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vertShader, vertCode);
+		gl.compileShader(vertShader);
+
+		var fragCode = ''
+			+ 'void main() {\n'
+			+ ' gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n'
+			+ '}\n';
+		var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fragShader, fragCode);
+		gl.compileShader(fragShader);
+
+		var shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertShader);
+		gl.attachShader(shaderProgram, fragShader);
+		gl.linkProgram(shaderProgram);
+		gl.useProgram(shaderProgram);
+
+		// 着色器变量赋值
+		var a_Position = gl.getAttribLocation(shaderProgram, 'a_Position');
+		/*gl.vertexAttrib3f(a_Position, 0.0, 0.0, 0.0);*/
+		var position = new Float32Array([0.5, 0.5, 0.5, 1.0]);
+		gl.vertexAttrib4fv(a_Position, position);
+		var a_PointSize = gl.getAttribLocation(shaderProgram, 'a_PointSize');
+		gl.vertexAttrib1f(a_PointSize, 20.0);
+
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+
+		gl.drawArrays(gl.POINTS, 0, 1);
+
+	</script>
+</body>
+</html>
